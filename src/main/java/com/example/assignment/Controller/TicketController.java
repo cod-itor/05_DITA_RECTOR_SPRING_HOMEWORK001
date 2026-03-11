@@ -114,8 +114,11 @@ public class TicketController {
 
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Update a ticket by ID")
     @PutMapping("{ticket-id}")
     public ResponseEntity<Ticket> updateTicketById(@PathVariable("ticket-id") long ticketId , @RequestBody TicketRequestDto ticketRequestDto){
+        ArrayList<Ticket> updateTicketList = new ArrayList<>();
+
         for(Ticket ticket : ticketList){
             if(ticket.getTicketId().equals(ticketId)){
                 ticket.setPassengerName(ticketRequestDto.getPassengerName());
@@ -128,11 +131,13 @@ public class TicketController {
                 ticket.setSeatNumber(ticketRequestDto.getSeatNumber());
                 return ResponseEntity.ok(ticket);
             }
+            updateTicketList.add(ticket);
         }
+
         return ResponseEntity.badRequest().build();
 
     }
-    @Operation(summary = "Delete a ticket by ID")
+    @Operation(summary = "Delete a ticket by ID")//finished
     @DeleteMapping("/delete/{ticket-id}")
     public ResponseEntity<DeleteBodyResponse<ArrayList<Ticket>>> deleteTicketById(@PathVariable("ticket-id") long ticketId){
         boolean remove = ticketList.removeIf(ticket -> ticket.getTicketId() == ticketId);
@@ -144,7 +149,8 @@ public class TicketController {
                     Instant.now()
             );
             return ResponseEntity.status(404).body(response);
-        }else{
+        };
+
             DeleteBodyResponse<ArrayList<Ticket>> response = new DeleteBodyResponse<>(
                     true,
                     "Ticket deleted successfully",
@@ -152,11 +158,11 @@ public class TicketController {
                     Instant.now()
             );
             return ResponseEntity.ok(response);
-        }
+
 
     }
 
-
+@Operation(summary = "Filter tickets by status and travel date")
 @GetMapping("/filter") //finished
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> filterStatusAndDate(@RequestParam TicketStatus ticketStatus, @RequestParam LocalDate date ){
         ArrayList<Ticket> filterList = new ArrayList<>();
@@ -186,6 +192,7 @@ public class TicketController {
     );
         return ResponseEntity.ok(response);
 }
+@Operation(summary = "Create multiple new tickets")
 @PostMapping("/bulk")
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> createMultipleTickets(@RequestBody List<TicketRequestDto> requestDtoList ) {
     ArrayList<Ticket> newCreatedTicket = new ArrayList<>();
@@ -204,7 +211,6 @@ public class TicketController {
         newCreatedTicket.add(newticket);
         ticketList.add(newticket);
     }
-
     ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
             true,
             "Tickets retrieved successfully",
