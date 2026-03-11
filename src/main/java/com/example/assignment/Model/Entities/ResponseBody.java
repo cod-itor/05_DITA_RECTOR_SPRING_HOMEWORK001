@@ -1,0 +1,19 @@
+package com.example.assignment.Model.Entities;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ResponseBody<T> {
+    private boolean success;
+    private String message;
+    private String status;
+    private T payLoad;
+    private Instant timestamp;
+
+}
