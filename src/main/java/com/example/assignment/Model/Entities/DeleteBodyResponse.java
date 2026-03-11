@@ -1,4 +1,4 @@
-package com.example.assignment.Model.Request;
+package com.example.assignment.Model.Entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

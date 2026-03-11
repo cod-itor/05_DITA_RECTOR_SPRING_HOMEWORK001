@@ -3,8 +3,7 @@ package com.example.assignment.Controller;
 import com.example.assignment.Model.Entities.ResponseBody;
 import com.example.assignment.Model.Entities.Ticket;
 import com.example.assignment.Model.Entities.TicketStatus;
-import com.example.assignment.Model.Request.BulkTicketRequest;
-import com.example.assignment.Model.Request.DeleteBodyResponse;
+import com.example.assignment.Model.Entities.DeleteBodyResponse;
 import com.example.assignment.Model.Request.TicketRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
@@ -19,25 +18,38 @@ import java.util.concurrent.atomic.AtomicLong;
 @RestController
 @RequestMapping("/api/v1/tickets")
 public class TicketController {
-   private final ArrayList<Ticket> ticketList = new ArrayList<>();
+   private final ArrayList<Ticket> TICKET_LIST = new ArrayList<>();
    private final AtomicLong autoGenerateId = new AtomicLong(1);
 
     public TicketController(){
-        ticketList.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, 3));
-        ticketList.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,true, TicketStatus.CANCELED, 3));
-        ticketList.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.COMPLETED, 3));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, 3));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,true, TicketStatus.CANCELED, 3));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.COMPLETED, 3));
     }
-    @Operation(summary = "Get all tickets") //finished
+    @Operation(summary = "Get all tickets")
     @GetMapping
-    public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getAllTicket(){
-       ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
-               true,
-               "Tickets retrieved successfully",
-               "200 OK",
-               ticketList,
-               Instant.now()
+    public ResponseEntity<ResponseBody<List<Ticket>>> getAllTicket(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
+    ) {
+        ArrayList<Ticket> paginatedList = new ArrayList<>();
+        int start = (page - 1) * size;
 
-       );
+        for (int i = start; i < TICKET_LIST.size(); i++) {
+            if (paginatedList.size() == size) {
+                break;
+            }
+            paginatedList.add(TICKET_LIST.get(i));
+        }
+
+        ResponseBody<List<Ticket>> response = new ResponseBody<>(
+                true,
+                "Tickets retrieved successfully",
+                "200 OK",
+                new ArrayList<>(paginatedList),
+                Instant.now()
+        );
+
         return ResponseEntity.ok(response);
     }
     @Operation(summary = "Create a new Ticket") //finished
@@ -54,7 +66,7 @@ public class TicketController {
                 ticketRequestDto.getTicketStatus(),
                 ticketRequestDto.getSeatNumber()
         );
-        ticketList.add(newTicket);
+        TICKET_LIST.add(newTicket);
         ResponseBody<Ticket> responseBody = new ResponseBody<>(
                true,
                "Tickets retrieved successfully",
@@ -70,7 +82,7 @@ public class TicketController {
     @GetMapping("/{ticket-id}")
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getTicketById (@PathVariable("ticket-id") long ticketId ){
         ArrayList<Ticket> ticketIdSearch = new ArrayList<>();
-        for(Ticket ticket : ticketList){
+        for(Ticket ticket : TICKET_LIST){
             if(ticket.getTicketId().equals(ticketId)){
                 ticketIdSearch.add(ticket);
             }
@@ -100,18 +112,18 @@ public class TicketController {
     @Operation(summary = "Search for ticket(s) by passenger name") //finished
     @GetMapping("/search")
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getTicketByName(@RequestParam String ticketName){
-        ArrayList<Ticket> searchTicketList = new ArrayList<>();
-        for(Ticket ticket : ticketList){
+        ArrayList<Ticket> searchTICKET_LIST = new ArrayList<>();
+        for(Ticket ticket : TICKET_LIST){
             if(ticket.getPassengerName().equalsIgnoreCase(ticketName)){
-              searchTicketList.add(ticket);
+              searchTICKET_LIST.add(ticket);
             }
         }
-        if(searchTicketList.isEmpty()){
+        if(searchTICKET_LIST.isEmpty()){
             ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
                     true,
                     "No tickets found for the given passenger name",
                     "200 OK",
-                    searchTicketList,
+                    searchTICKET_LIST,
                     Instant.now()
             );
             return ResponseEntity.ok(response);
@@ -121,7 +133,7 @@ public class TicketController {
                 true,
                 "Tickets fetched successfully",
                 "200 OK",
-                searchTicketList,
+                searchTICKET_LIST,
                 Instant.now()
         );
 
@@ -130,9 +142,9 @@ public class TicketController {
     @Operation(summary = "Update a ticket by ID")
     @PutMapping("{ticket-id}") //not done yet
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> updateTicketById(@PathVariable("ticket-id") long ticketId , @RequestBody TicketRequestDto ticketRequestDto){
-        ArrayList<Ticket> updateTicketList = new ArrayList<>();
+        ArrayList<Ticket> updateTICKET_LIST = new ArrayList<>();
 
-        for(Ticket ticket : ticketList){
+        for(Ticket ticket : TICKET_LIST){
             if(ticket.getTicketId().equals(ticketId)){
                 ticket.setPassengerName(ticketRequestDto.getPassengerName());
                 ticket.setTravelDate(ticketRequestDto.getTravelDate());
@@ -142,16 +154,16 @@ public class TicketController {
                 ticket.setPaymentStatus(ticketRequestDto.getPaymentStatus());
                 ticket.setTicketStatus(ticketRequestDto.getTicketStatus());
                 ticket.setSeatNumber(ticketRequestDto.getSeatNumber());
-                updateTicketList.add(ticket);
+                updateTICKET_LIST.add(ticket);
             }
 
         }
-        if(updateTicketList.isEmpty()){
+        if(updateTICKET_LIST.isEmpty()){
             ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
                     false,
                     "No tickets found with the given ID.",
                     "404 NOT_FOUND",
-                    updateTicketList,
+                    updateTICKET_LIST,
                     Instant.now()
 
             );
@@ -161,7 +173,7 @@ public class TicketController {
                 true,
                 "Ticket updated successfully",
                 "200 OK",
-                updateTicketList,
+                updateTICKET_LIST,
                 Instant.now()
         );
 
@@ -172,7 +184,7 @@ public class TicketController {
     @Operation(summary = "Delete a ticket by ID")//finished
     @DeleteMapping("/delete/{ticket-id}")
     public ResponseEntity<DeleteBodyResponse<ArrayList<Ticket>>> deleteTicketById(@PathVariable("ticket-id") long ticketId){
-        boolean remove = ticketList.removeIf(ticket -> ticket.getTicketId() == ticketId);
+        boolean remove = TICKET_LIST.removeIf(ticket -> ticket.getTicketId() == ticketId);
         if(!remove ){
             DeleteBodyResponse<ArrayList<Ticket>> response = new DeleteBodyResponse<>(
                     false,
@@ -198,7 +210,7 @@ public class TicketController {
 @GetMapping("/filter") //finished
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> filterStatusAndDate(@RequestParam TicketStatus ticketStatus, @RequestParam LocalDate date ){
         ArrayList<Ticket> filterList = new ArrayList<>();
-        for(Ticket ticket : ticketList){
+        for(Ticket ticket : TICKET_LIST){
             if(ticket.getTicketStatus().equals(ticketStatus) & ticket.getTravelDate().equals(date)){
                 filterList.add(ticket);
             }
@@ -241,7 +253,7 @@ public class TicketController {
                 ticketRequestDto.getSeatNumber()
         );
         newCreatedTicket.add(newticket);
-        ticketList.add(newticket);
+        TICKET_LIST.add(newticket);
     }
     ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
             true,
@@ -252,7 +264,14 @@ public class TicketController {
     );
     return ResponseEntity.ok(response);
 
+
+    @Operation(summary = "Update payment status of multiple tickets")
+    @PostMapping
+    public
+
+
 }
+
 
 
 
