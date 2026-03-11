@@ -4,6 +4,7 @@ import com.example.assignment.Model.Entities.ResponseBody;
 import com.example.assignment.Model.Entities.Ticket;
 import com.example.assignment.Model.Entities.TicketStatus;
 import com.example.assignment.Model.Request.BulkTicketRequest;
+import com.example.assignment.Model.Request.DeleteBodyResponse;
 import com.example.assignment.Model.Request.TicketRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
@@ -82,6 +83,7 @@ public class TicketController {
 
         return ResponseEntity.notFound().build();
     }
+    @Operation(summary = "Search for ticket(s) by passenger name") //finished
     @GetMapping("/search")
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getTicketByName(@RequestParam String ticketName){
         ArrayList<Ticket> searchTicketList = new ArrayList<>();
@@ -89,6 +91,18 @@ public class TicketController {
             if(ticket.getPassengerName().equalsIgnoreCase(ticketName)){
               searchTicketList.add(ticket);
             }
+        }
+        if(searchTicketList.isEmpty()){
+            ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                    true,
+                    "No tickets found for the given passenger name",
+                    "200 OK",
+                    searchTicketList,
+                    Instant.now()
+
+            );
+            return ResponseEntity.ok(response);
+
         }
         ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
                 true,
@@ -100,7 +114,7 @@ public class TicketController {
 
         return ResponseEntity.ok(response);
     }
-    @PutMapping("{ticket-id}") //finished
+    @PutMapping("{ticket-id}")
     public ResponseEntity<Ticket> updateTicketById(@PathVariable("ticket-id") long ticketId , @RequestBody TicketRequestDto ticketRequestDto){
         for(Ticket ticket : ticketList){
             if(ticket.getTicketId().equals(ticketId)){
@@ -120,25 +134,57 @@ public class TicketController {
     }
     @Operation(summary = "Delete a ticket by ID")
     @DeleteMapping("/delete/{ticket-id}")
-    public ResponseEntity<String> deleteTicketById(@PathVariable("ticket-id") long ticketId){
+    public ResponseEntity<DeleteBodyResponse<ArrayList<Ticket>>> deleteTicketById(@PathVariable("ticket-id") long ticketId){
         boolean remove = ticketList.removeIf(ticket -> ticket.getTicketId() == ticketId);
         if(!remove ){
-            return ResponseEntity.ok("SuccessFully Deleted the Book");
+            DeleteBodyResponse<ArrayList<Ticket>> response = new DeleteBodyResponse<>(
+                    false,
+                    "Ticket not found",
+                    "404 NOT_FOUND",
+                    Instant.now()
+            );
+            return ResponseEntity.status(404).body(response);
         }else{
-            return ResponseEntity.notFound().build();
+            DeleteBodyResponse<ArrayList<Ticket>> response = new DeleteBodyResponse<>(
+                    true,
+                    "Ticket deleted successfully",
+                    "200 OK",
+                    Instant.now()
+            );
+            return ResponseEntity.ok(response);
         }
+
     }
 
 
-@GetMapping("/filter")
-    public ResponseEntity<Ticket> filterStatusAndDate(@RequestParam TicketStatus ticketStatus, @RequestParam LocalDate date ){
+@GetMapping("/filter") //finished
+    public ResponseEntity<ResponseBody<ArrayList<Ticket>>> filterStatusAndDate(@RequestParam TicketStatus ticketStatus, @RequestParam LocalDate date ){
+        ArrayList<Ticket> filterList = new ArrayList<>();
         for(Ticket ticket : ticketList){
             if(ticket.getTicketStatus().equals(ticketStatus) & ticket.getTravelDate().equals(date)){
-
-                return ResponseEntity.ok(ticket);
+                filterList.add(ticket);
             }
         }
-        return ResponseEntity.notFound().build();
+        if(filterList.isEmpty()){
+            ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                    true,
+                    "No tickets found with given filters",
+                    "200 OK",
+                    filterList,
+                    Instant.now()
+
+            );
+            return ResponseEntity.ok(response);
+
+        }
+    ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+            true,
+            "Tickets filtered successfully",
+            "200 OK",
+            filterList,
+            Instant.now()
+    );
+        return ResponseEntity.ok(response);
 }
 @PostMapping("/bulk")
     public ResponseEntity<ResponseBody<ArrayList<Ticket>>> createMultipleTickets(@RequestBody List<TicketRequestDto> requestDtoList ) {
