@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequestMapping("/api/v1/tickets")
 public class TicketController {
    private final ArrayList<Ticket> ticketList = new ArrayList<>();
-   private final AtomicLong autoGenerateId = new AtomicLong();
+   private final AtomicLong autoGenerateId = new AtomicLong(1);
 
     public TicketController(){
         ticketList.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, 3));
@@ -64,24 +64,43 @@ public class TicketController {
 
     }
     @GetMapping("/{ticket-id}")
-    public ResponseEntity<Ticket> getTicketById (@PathVariable("ticket-id") long ticketId ){
+    public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getTicketById (@PathVariable("ticket-id") long ticketId ){
+        ArrayList<Ticket> ticketIdSearch = new ArrayList<>();
         for(Ticket ticket : ticketList){
             if(ticket.getTicketId().equals(ticketId)){
-                return ResponseEntity.ok(ticket);
+                ticketIdSearch.add(ticket);
             }
+            ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                    true,
+                    "Tickets retrieved successfully",
+                    "200 OK",
+                    ticketIdSearch,
+                    Instant.now()
+            );
+            return ResponseEntity.ok(response);
         }
+
         return ResponseEntity.notFound().build();
     }
     @GetMapping("/search")
-    public ResponseEntity<List<Ticket>> getTicketByName(@RequestParam String ticketName){
+    public ResponseEntity<ResponseBody<ArrayList<Ticket>>> getTicketByName(@RequestParam String ticketName){
+        ArrayList<Ticket> searchTicketList = new ArrayList<>();
         for(Ticket ticket : ticketList){
-            if(ticket.getPassengerName().toLowerCase().contains(ticketName.toLowerCase())){
-                return ResponseEntity.ok(ticketList);
+            if(ticket.getPassengerName().equalsIgnoreCase(ticketName)){
+              searchTicketList.add(ticket);
             }
         }
-        return ResponseEntity.notFound().build();
+        ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                true,
+                "Tickets fetched successfully",
+                "200 OK",
+                searchTicketList,
+                Instant.now()
+        );
+
+        return ResponseEntity.ok(response);
     }
-    @PutMapping("{ticket-id}")
+    @PutMapping("{ticket-id}") //finished
     public ResponseEntity<Ticket> updateTicketById(@PathVariable("ticket-id") long ticketId , @RequestBody TicketRequestDto ticketRequestDto){
         for(Ticket ticket : ticketList){
             if(ticket.getTicketId().equals(ticketId)){
