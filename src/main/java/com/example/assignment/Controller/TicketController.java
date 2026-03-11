@@ -4,6 +4,7 @@ import com.example.assignment.Model.Entities.ResponseBody;
 import com.example.assignment.Model.Entities.Ticket;
 import com.example.assignment.Model.Entities.TicketStatus;
 import com.example.assignment.Model.Entities.DeleteBodyResponse;
+import com.example.assignment.Model.Request.BulkTicketPostRequest;
 import com.example.assignment.Model.Request.TicketRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +23,12 @@ public class TicketController {
    private final AtomicLong autoGenerateId = new AtomicLong(1);
 
     public TicketController(){
-        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, 3));
-        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,true, TicketStatus.CANCELED, 3));
-        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.COMPLETED, 3));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, "3"));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,true, TicketStatus.CANCELED, "3"));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.COMPLETED, "3"));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.BOOKED, "3"));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,true, TicketStatus.CANCELED, "3"));
+        TICKET_LIST.add(new Ticket(autoGenerateId.getAndIncrement() ,"Jmol", LocalDate.now(),"Seoul Station", "Phnom Penh",23.34,false, TicketStatus.COMPLETED, "3"));
     }
     @Operation(summary = "Get all tickets")
     @GetMapping
@@ -35,13 +39,12 @@ public class TicketController {
         ArrayList<Ticket> paginatedList = new ArrayList<>();
         int start = (page - 1) * size;
 
-        for (int i = start; i < TICKET_LIST.size(); i++) {
+        for (int i = start; i < TICKET_LIST.size();i++) {
             if (paginatedList.size() == size) {
                 break;
             }
             paginatedList.add(TICKET_LIST.get(i));
         }
-
         ResponseBody<List<Ticket>> response = new ResponseBody<>(
                 true,
                 "Tickets retrieved successfully",
@@ -193,7 +196,7 @@ public class TicketController {
                     Instant.now()
             );
             return ResponseEntity.status(404).body(response);
-        };
+        }
 
             DeleteBodyResponse<ArrayList<Ticket>> response = new DeleteBodyResponse<>(
                     true,
@@ -265,14 +268,38 @@ public class TicketController {
     return ResponseEntity.ok(response);
 
 
-    @Operation(summary = "Update payment status of multiple tickets")
-    @PostMapping
-    public
-
-
 }
-
-
+    @Operation(summary = "Update payment status of multiple tickets")
+    @PutMapping("/bulk")
+    public ResponseEntity<ResponseBody<ArrayList<Ticket>>> requestBulkPostRequest(@RequestParam BulkTicketPostRequest bulkTicketPostRequest){
+        ArrayList<Ticket> updatedTickets = new ArrayList<>();
+        for (Integer id : bulkTicketPostRequest.getTicketId()) {
+            for (Ticket ticket : TICKET_LIST) {
+                if (ticket.getTicketId() == (long) id) {
+                    ticket.setPaymentStatus(bulkTicketPostRequest.isPaymentStatus());
+                    updatedTickets.add(ticket);
+                }
+            }
+        }
+        if(updatedTickets.isEmpty()){
+            ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                    false,
+                    "No tickets were updated",
+                    "404 NOT_FOUND",
+                    updatedTickets,
+                    Instant.now()
+            );
+            return ResponseEntity.status(404).body(response);
+        }
+        ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                true,
+                "TICKETS UPDATED SUCCESSFULLY",
+                "200 OK",
+                updatedTickets,
+                Instant.now()
+        );
+    return ResponseEntity.ok(response);
+    }
 
 
 

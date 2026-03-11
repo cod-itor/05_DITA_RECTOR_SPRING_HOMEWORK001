@@ -17,5 +17,5 @@ public class Ticket {
     private double price;
     private Boolean paymentStatus;
     private TicketStatus ticketStatus;
-    private Integer seatNumber;
+    private String seatNumber;
 }

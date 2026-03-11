@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BulkTicketRequest {
+public class BulkTicketPostRequest {
     private Integer[] ticketId;
     private boolean paymentStatus;
+
 
 }
