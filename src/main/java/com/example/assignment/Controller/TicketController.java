@@ -40,7 +40,7 @@ public class TicketController {
        );
         return ResponseEntity.ok(response);
     }
-    @Operation(summary = "Create a new Ticket")
+    @Operation(summary = "Create a new Ticket") //finished
     @PostMapping
     public ResponseEntity<ResponseBody<Ticket>> saveTicket(@RequestBody TicketRequestDto ticketRequestDto){
         Ticket newTicket = new Ticket(
@@ -58,7 +58,7 @@ public class TicketController {
         ResponseBody<Ticket> responseBody = new ResponseBody<>(
                true,
                "Tickets retrieved successfully",
-               "200 OK",
+               "201 CREATED",
                newTicket,
                 Instant.now()
        );
@@ -74,17 +74,28 @@ public class TicketController {
             if(ticket.getTicketId().equals(ticketId)){
                 ticketIdSearch.add(ticket);
             }
+        }
+        if(ticketIdSearch.isEmpty()){
             ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
-                    true,
-                    "Tickets retrieved successfully",
-                    "200 OK",
+                    false,
+                    "No tickets found with the given ID. ",
+                    "404 NOT_FOUND",
                     ticketIdSearch,
                     Instant.now()
             );
-            return ResponseEntity.ok(response);
-        }
+            return ResponseEntity.status(404).body(response);
 
-        return ResponseEntity.notFound().build();
+        }
+        ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
+                true,
+                "Tickets retrieved successfully",
+                "200 OK",
+                ticketIdSearch,
+                Instant.now()
+        );
+        return ResponseEntity.ok(response);
+
+
     }
     @Operation(summary = "Search for ticket(s) by passenger name") //finished
     @GetMapping("/search")
