@@ -113,7 +113,6 @@ public class TicketController {
                     "200 OK",
                     searchTicketList,
                     Instant.now()
-
             );
             return ResponseEntity.ok(response);
 
@@ -143,15 +142,16 @@ public class TicketController {
                 ticket.setPaymentStatus(ticketRequestDto.getPaymentStatus());
                 ticket.setTicketStatus(ticketRequestDto.getTicketStatus());
                 ticket.setSeatNumber(ticketRequestDto.getSeatNumber());
+                updateTicketList.add(ticket);
             }
-            updateTicketList.add(ticket);
+
         }
         if(updateTicketList.isEmpty()){
             ResponseBody<ArrayList<Ticket>> response = new ResponseBody<>(
                     false,
                     "No tickets found with the given ID.",
                     "404 NOT_FOUND",
-                    null,
+                    updateTicketList,
                     Instant.now()
 
             );
@@ -168,29 +168,7 @@ public class TicketController {
         return ResponseEntity.ok(response);
 
     }
-//    {
-//        "success": true,
-//            "message": "Ticket updated successfully",
-//            "status": "200 OK",
-//            "payload": {
-//        "ticketId": 70,
-//                "passengerName": "Jmol",
-//                "travelDate": "2026-03-11",
-//                "sourceStation": "string",
-//                "destinationStation": "string",
-//                "price": 0,
-//                "paymentStatus": true,
-//                "ticketStatus": "BOOKED",
-//                "seatNumber": "string"
-//    },
-//        "timestamp": "2026-03-11T12:03:28.298429277Z"
-//    }
-//    {
-//        "success": false,
-//            "message": "No tickets found with the given ID.",
-//            "status": "404 NOT_FOUND",
-//            "timestamp": "2026-03-11T12:01:23.530856224Z"
-//    }
+
     @Operation(summary = "Delete a ticket by ID")//finished
     @DeleteMapping("/delete/{ticket-id}")
     public ResponseEntity<DeleteBodyResponse<ArrayList<Ticket>>> deleteTicketById(@PathVariable("ticket-id") long ticketId){
